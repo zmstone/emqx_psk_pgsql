@@ -1,0 +1,93 @@
+%%-*- mode: erlang -*-
+%% emqx_psk_pgsql config mapping
+
+{mapping, "psk.pgsql.server", "emqx_psk_pgsql.server", [
+  {default, {"127.0.0.1", 5432}},
+  {datatype, [integer, ip, string]}
+]}.
+
+{mapping, "psk.pgsql.pool", "emqx_psk_pgsql.server", [
+  {default, 8},
+  {datatype, integer}
+]}.
+
+{mapping, "psk.pgsql.database", "emqx_psk_pgsql.server", [
+  {datatype, string}
+]}.
+
+{mapping, "psk.pgsql.username", "emqx_psk_pgsql.server", [
+  {default, ""},
+  {datatype, string}
+]}.
+
+{mapping, "psk.pgsql.password", "emqx_psk_pgsql.server", [
+  {default, ""},
+  {datatype, string}
+]}.
+
+{mapping, "psk.pgsql.encoding", "emqx_psk_pgsql.server", [
+  {default, utf8},
+  {datatype, atom}
+]}.
+
+{mapping, "psk.pgsql.ssl", "emqx_psk_pgsql.server", [
+  {default, false},
+  {datatype, {enum, [true, false]}}
+]}.
+
+{mapping, "psk.pgsql.ssl_opts.keyfile", "emqx_psk_pgsql.server", [
+  {datatype, string}
+]}.
+
+{mapping, "psk.pgsql.ssl_opts.certfile", "emqx_psk_pgsql.server", [
+  {datatype, string}
+]}.
+
+{mapping, "psk.pgsql.ssl_opts.cacertfile", "emqx_psk_pgsql.server", [
+  {datatype, string}
+]}.
+
+{translation, "emqx_psk_pgsql.server", fun(Conf) ->
+  {PgHost, PgPort} =
+  case cuttlefish:conf_get("psk.pgsql.server", Conf) of
+    {Ip, Port} -> {Ip, Port};
+    S          -> case string:tokens(S, ":") of
+                    [Domain]       -> {Domain, 5432};
+                    [Domain, Port] -> {Domain, list_to_integer(Port)}
+                  end
+    end,
+  Pool = cuttlefish:conf_get("psk.pgsql.pool", Conf),
+  Username = cuttlefish:conf_get("psk.pgsql.username", Conf),
+  Passwd = cuttlefish:conf_get("psk.pgsql.password", Conf, ""),
+  DB = cuttlefish:conf_get("psk.pgsql.database", Conf),
+  Encoding = cuttlefish:conf_get("psk.pgsql.encoding", Conf),
+  Ssl = cuttlefish:conf_get("psk.pgsql.ssl", Conf),
+
+  Filter  = fun(Opts) -> [{K, V} || {K, V} <- Opts, V =/= undefined] end,
+  SslOpts = fun(Prefix) ->
+                Filter([{keyfile,    cuttlefish:conf_get(Prefix ++ ".keyfile", Conf, undefined)},
+                        {certfile,   cuttlefish:conf_get(Prefix ++ ".certfile", Conf, undefined)},
+                        {cacertfile, cuttlefish:conf_get(Prefix ++ ".cacertfile", Conf, undefined)}])
+            end,
+
+  TempHost = case inet:parse_address(PgHost) of
+      {ok, IpAddr} ->
+          IpAddr;
+      _ ->
+          PgHost
+  end,
+  [{pool_size, Pool},
+   {auto_reconnect, 1},
+   {host, TempHost},
+   {port, PgPort},
+   {username, Username},
+   {password, Passwd},
+   {database, DB},
+   {encoding, Encoding},
+   {ssl, Ssl},
+   {ssl_opts, SslOpts("psk.pgsql.ssl_opts")}]
+end}.
+
+{mapping, "psk.pgsql.lookup_query", "emqx_psk_pgsql.lookup_query", [
+  {datatype, string}
+]}.

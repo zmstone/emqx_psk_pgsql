@@ -1,0 +1,72 @@
+## EMQX TLS/DTLS PSK with Postgres database
+
+Build Plugin
+------------
+
+make && make tests
+
+Configuration
+-------------
+
+File: etc/emqx_psk_pgsql.conf
+
+```
+## PostgreSQL server address.
+##
+## Value: Port | IP:Port
+##
+## Examples: 5432, 127.0.0.1:5432, localhost:5432
+psk.pgsql.server = 127.0.0.1:5432
+
+## PostgreSQL pool size.
+##
+## Value: Number
+psk.pgsql.pool = 8
+
+## PostgreSQL username.
+##
+## Value: String
+psk.pgsql.username = root
+
+## PostgreSQL password.
+##
+## Value: String
+## psk.pgsql.password =
+
+## PostgreSQL database.
+##
+## Value: String
+psk.pgsql.database = mqtt
+
+## PostgreSQL database encoding.
+##
+## Value: String
+psk.pgsql.encoding = utf8
+
+## Whether to enable SSL connection.
+##
+## Value: true | false
+psk.pgsql.ssl = false
+
+## SSL keyfile.
+##
+## Value: File
+## psk.pgsql.ssl_opts.keyfile =
+
+## SSL certfile.
+##
+## Value: File
+## psk.pgsql.ssl_opts.certfile =
+
+## SSL cacertfile.
+##
+## Value: File
+## psk.pgsql.ssl_opts.cacertfile =
+
+## PSK lookup query.
+##
+## Value: SQL
+##
+## Variables:
+##  - $1: clientid
+psk.pgsql.lookup_query = select psk from mqtt_dtls_psk where id = $1 limit 1

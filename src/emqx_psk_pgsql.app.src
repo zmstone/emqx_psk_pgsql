@@ -1,0 +1,10 @@
+{application, emqx_psk_pgsql,
+ [{description,"EMQX PSK Plugin from Postgres database"},
+  {vsn,"git"},
+  {modules,[]},
+  {registered,[emqx_psk_pgsql_sup]},
+  {applications,[kernel,stdlib]},
+  {mod,{emqx_psk_pgsql_app,[]}},
+  {env, []},
+  {maintainers, ["Alexander Mihajlovic <alexander.mihajlovic@endian.se>"]}
+ ]}.
