@@ -4,14 +4,13 @@
 
 -include("emqx_psk_pgsql.hrl").
 
--include_lib("emqx/include/emqx.hrl").
--include_lib("emqx/include/logger.hrl").
-
 -export([connect/1]).
 
 -export([lookup_query/1]).
 
 -define(LOOKUP_QUERY, "lookup_query").
+-define(LOG(Level, Msg), logger:log(Level, Msg)).
+-define(LOG(Level, Fmt, Args), logger:log(Level, Fmt, Args)).
 
 %%--------------------------------------------------------------------
 %% PostgreSQL Connect/Query
